@@ -28,7 +28,7 @@ class MemberServiceTest {
     }
 
     @Test
-    void 회원가입() { // join() 테스트 , 데스트는 메서드 이름을 한글로 해도 무관.
+    void 회원가입() { // join() 테스트 , 테스트는 메서드 이름을 한글로 해도 무관.
         // given : 기반이 되는 데이터
         Member member = new Member();
         member.setName("hello");
