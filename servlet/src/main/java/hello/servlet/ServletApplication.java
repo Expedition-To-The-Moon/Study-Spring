@@ -12,4 +12,14 @@ public class ServletApplication {
 		SpringApplication.run(ServletApplication.class, args);
 	}
 
+	/*
+	application.properties 에
+	 	spring.mvc.view.prefix=/WEB-INF/views/
+		spring.mvc.view.suffix=.jsp
+	이렇게 넣으면 아래 코드를 자동으로 생성해 줌
+	*/
+//	@Bean
+//	ViewResolver internalResourceViewResolver() {
+//		return new InternalResourceViewResolver("/WEB-INF/views/", ".jsp");
+//	}
 }
