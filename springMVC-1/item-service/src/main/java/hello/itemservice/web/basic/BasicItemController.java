@@ -6,10 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -49,9 +46,68 @@ public class BasicItemController {
         return "basic/addForm";
     }
 
+    /** 상품 등록 처리 방식 1 - @RequestParam 을 사용하는 경우 */
+//    @PostMapping("/add")  // POST 인 "/add" 가 한 개 이상이므로 오류 발생하므로 주석처리함
+    public String addItemV1(@RequestParam("itemName") String itemName,
+                       @RequestParam("price") int price, // int나 Integer 상관없음
+                       @RequestParam("quantity") Integer quantity,
+                       Model model) {
+        Item item = new Item();
+        item.setItemName(itemName);
+        item.setPrice(price);
+        item.setQuantity(quantity);
+
+        itemRepository.save(item);
+        // 저장하고 저장된 결과물을 model에 넣음
+        model.addAttribute("item", item);
+
+        return "basic/item";
+    }
+
+    /** 상품 등록 처리 방식 2 - @ModelAttribute 를 사용하는 경우
+        @ModelAttribute("name") 역할
+        1) item.set~ 들을 자동으로 생성해줌
+        2) 결과물을 이름이 "name"인 model에 넣어줌
+            => model.addAttribute("item", item); 자동 생성되므로 생략 가능
+    */
+//    @PostMapping("/add")  // POST 인 "/add" 가 한 개 이상이므로 오류 발생하므로 주석처리함
+    public String addItemV2(@ModelAttribute("item") Item item, Model model) {
+        itemRepository.save(item);
+        return "basic/item";
+    }
+
+    /** 상품 등록 처리 방식 3 - @ModelAttribute의 이름을 생략하는 경우
+        ModelAttribute 의 이름을 생략하면 모델에 저장될 때 클래스명의 첫글자만 소문자로 변경해서 등록됨
+        ex. Item -> item
+    */
+//    @PostMapping("/add")  // POST 인 "/add" 가 한 개 이상이므로 오류 발생하므로 주석처리함
+    public String addItemV3(@ModelAttribute Item item) {
+        itemRepository.save(item);
+        return "basic/item";
+    }
+
+    /** 상품 등록 처리 방식 4 - @ModelAttribute를 생략하는 경우
+        이 경우에도 모델에 저장될 때 클래스명의 첫글자만 소문자로 변경해서 등록됨
+        ex. Item -> item
+    */
     @PostMapping("/add")
-    public String save() {
-        return "";
+    public String addItemV4(Item item) {
+        itemRepository.save(item);
+        return "basic/item";
+    }
+
+    /* 상품 수정 */
+    @GetMapping("/{itemId}/edit")
+    public String editForm(@PathVariable("itemId") Long itemId, Model model) {
+        Item item = itemRepository.findById(itemId);
+        model.addAttribute("item", item);
+        return "basic/editForm";
+    }
+
+    @PostMapping("/{itemId}/edit")
+    public String edit(@PathVariable("itemId") Long itemId, @ModelAttribute Item item) {
+        itemRepository.update(itemId, item);
+        return "redirect:/basic/items/{itemId}";
     }
 
     /**
