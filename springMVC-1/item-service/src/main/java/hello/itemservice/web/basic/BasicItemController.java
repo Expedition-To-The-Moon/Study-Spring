@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -90,13 +91,31 @@ public class BasicItemController {
         이 경우에도 모델에 저장될 때 클래스명의 첫글자만 소문자로 변경해서 등록됨
         ex. Item -> item
     */
-    @PostMapping("/add")
+//    @PostMapping("/add")  // POST 인 "/add" 가 한 개 이상이므로 오류 발생하므로 주석처리함
     public String addItemV4(Item item) {
         itemRepository.save(item);
         return "basic/item";
     }
 
-    /* 상품 수정 */
+    /** POST, Redirect GET 방식 적용 - 상품 중복 등록 방지 */
+//    @PostMapping("/add")  // POST 인 "/add" 가 한 개 이상이므로 오류 발생하므로 주석처리함
+    public String addItemV5(Item item) {
+        itemRepository.save(item);
+        return "redirect:/basic/items/" + item.getId();
+    }
+
+    /** RedirectAttributes 사용
+        - 저장이 잘 되었으면 상품 상세 화면에 "저장되었습니다"라는 메시지를 띄움 */
+    @PostMapping("/add")
+    public String addItemV6(Item item, RedirectAttributes redirectAttributes) {
+        Item savedItem = itemRepository.save(item); // 저장된 결과 가져옴
+        // RedirectAttributes에 redirect와 관련된 정보 넣음
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/basic/items/{itemId}"; // 여기 못들어간 status는 쿼리파라미터 형식으로 들어감
+    }
+
+    /** 상품 수정 */
     @GetMapping("/{itemId}/edit")
     public String editForm(@PathVariable("itemId") Long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
