@@ -2,7 +2,9 @@ package hello.login.web;
 
 import hello.login.domain.member.Member;
 import hello.login.domain.member.MemberRepository;
+import hello.login.web.session.SessionManager;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class HomeController {
 
     private final MemberRepository memberRepository;
+    private final SessionManager sessionManager;
 
     //    @GetMapping("/")
     public String home() {
@@ -26,7 +29,7 @@ public class HomeController {
 
     // required = false 를 넣어줘야함
     // why? 로그인 안한 사용자도 접근가능해야 하므로
-    @GetMapping("/")
+//    @GetMapping("/")
     public String homeLogin(@CookieValue(name = "memberId", required = false) Long memberId, Model model) {
         if (memberId == null) {
             return "home";
@@ -42,15 +45,19 @@ public class HomeController {
         return "loginHome";
     }
 
-    @PostMapping("/logout")
-    public String logout(HttpServletResponse response) {
-        expireCookie(response, "memberId");
-        return "redirect:/";
-    }
+    /** 쿠키를 사용하던 것을 세션을 사용하도록 변경 */
+    @GetMapping("/")
+    public String homeLoginV2(HttpServletRequest request, Model model) {
 
-    private void expireCookie(HttpServletResponse response, String cookieName) {
-        Cookie cookie = new Cookie(cookieName, null);
-        cookie.setMaxAge(0); // 쿠키의 종료 날짜를 0으로 지정 -> 쿠키가 즉시 만료됨
-        response.addCookie(cookie);
+        // 세션 관리자에 저장된 회원 정보 조회
+        Member member = (Member) sessionManager.getSession(request);
+        if (member == null) {
+            // 없을 경우
+            return "home";
+        }
+
+        //로그인
+        model.addAttribute("member", member);
+        return "loginHome";
     }
 }
